@@ -115,7 +115,15 @@ void MpcDev::odomCallback(const nav_msgs::Odometry::ConstPtr& msg)
 
 void MpcDev::run()
 {
-    if(_wps_x.size() > 0)
+    if(_wps_x.empty())
+    {
+        geometry_msgs::TwistStamped mpc_cmd;
+        mpc_cmd.header.stamp = init_time;
+        mpc_cmd.twist.linear.x = 0.0;
+        mpc_cmd.twist.angular.z = 0.0;
+        _pub_twist.publish(mpc_cmd);
+    }
+    else
     {     
         _b_running = true;   
         MpcInput in;
