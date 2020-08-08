@@ -1,0 +1,22 @@
+<launch>
+	<group ns="terrasentia">
+		<node pkg="tf" type="static_transform_publisher" name="camera_link2baselink" args="0.15 0.0 0.3 0 0 0 base_link camera_link 10" />
+		<node pkg="tf" type="static_transform_publisher" name="grid2robot" args="0 0 0 0 0 0 1 base_link grid 10" />
+
+		<param name="center_offset_x_m" type="double" value="0.8"/>
+		<param name="center_offset_y_m" type="double" value="0.0"/>
+
+		<node pkg="terrasentia_tcp" type="tcp_node" name="tcp_node" respawn="true" output="screen">
+			<param name="input_lidar_topic" 	type="string" 	value="filteredScan" />
+			<param name="output_odom_topic" 	type="string" 	value="ekf" />
+			<param name="input_cmd_topic" 		type="string" 	value="cmd_vel" />
+		</node>
+
+		<node pkg="mpc_controller" type="mpc_node" name="mpc_node" respawn="true" output="screen">
+			<param name="wp_topic_name" 	type="string" 	value="mpc_path" />
+			<param name="mpc_config_path" 	type="string" 	value="configs/new_mpc.config" />
+			<param name="twist_topic_name"	type="string" 	value="cmd_vel" />
+			<param name="odom_topic_name"	type="string" 	value="ekf" />
+		</node>
+	</group>
+</launch>

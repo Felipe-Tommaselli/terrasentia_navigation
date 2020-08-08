@@ -89,23 +89,6 @@ MpcOutput RunMpcController::mpcController(MpcInput input)
 	vector<double> ptsx = input.wp_x;
 	vector<double> ptsy = input.wp_y;
 
-	/*
-	Eigen::VectorXd ptsx_car;
-	Eigen::VectorXd ptsy_car;
-	ptsx_car.resize(ptsx.size());
-	ptsy_car.resize(ptsy.size());
-
-	// Given the desired path was provided in map coordinates, first we need to convert the path into coordinates relative to the car.
-	// Transform the points to the vehicle's orientation
-	for (int i = 0; i < ptsx.size(); i++)
-	{
-		double x = ptsx[i] - px;
-		double y = ptsy[i] - py;
-		ptsx_car(i) = x * cos(-currentYaw) - y * sin(-currentYaw);
-		ptsy_car(i) = x * sin(-currentYaw) + y * cos(-currentYaw);
-	}
-	*/
-
 	Eigen::Map<Eigen::VectorXd>  ptsx_car(ptsx.data(), ptsx.size());
 	Eigen::Map<Eigen::VectorXd>  ptsy_car(ptsy.data(), ptsy.size());
 

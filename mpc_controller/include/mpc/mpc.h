@@ -20,29 +20,29 @@
 class MpcDev
 {
     public:
-        MpcDev(ros::NodeHandle*);
+        MpcDev(ros::NodeHandle* n);
         void debugPubs(MpcOutput);
         void odomCallback(const nav_msgs::Odometry::ConstPtr& msg);
         void run();
-        void wpCb (const geometry_msgs::PoseArray::ConstPtr& msg);
-        
-        bool                    b_running;
-        ros::Publisher          pub_twist;   
+        void wpCb(const nav_msgs::Path::ConstPtr& msg);  
 
     private:
-        double                  _yaw;
-        nav_msgs::Odometry      _odom;
-        double                  _last_ts;
-        ros::NodeHandle*        _nh;
-        ros::Publisher          _pub_output;
-        ros::Publisher          _pub_pred_vals;
-        ros::Publisher          _pub_pts_car;
-        ros::Publisher          _pub_mpc_pts;     
-        ros::Subscriber         _sub_odom;
-        ros::Subscriber         _sub_wp;
-        RunMpcController*       _run_mpc;
+        double              _yaw;
+        nav_msgs::Odometry  _odom;
+        double              _last_ts;
+        ros::NodeHandle*    _n;
+        ros::Publisher      _pub_output;
+        ros::Publisher      _pub_pred_vals;
+        ros::Publisher      _pub_pts_car;
+        ros::Publisher      _pub_mpc_pts;
+        ros::Publisher      _pub_twist;  
+        ros::Subscriber     _sub_odom;
+        ros::Subscriber     _sub_wp;
+        RunMpcController*   _run_mpc;
 
-        std::vector<double>     _wps_x;
-        std::vector<double>     _wps_y;
+        std::vector<double> _wps_x;
+        std::vector<double> _wps_y;
+
+        bool                _b_running; 
 };
 geometry_msgs::Quaternion getQuaternionForPoints(int i, double x0, double x1, double y0, double y1);

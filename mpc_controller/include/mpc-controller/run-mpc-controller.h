@@ -1,17 +1,11 @@
 #pragma once
 
 #include <iostream>
-#include <cmath>
 #include <vector>
 #include <string>
 #include <math.h>
-#include <numeric>
 #include <algorithm>
-#include <fstream>
-#include <iomanip>
-//#include "mpc-controller.h"
 #include "mpc-model2.h"
-//#include "ros-types.h"
 #include "paramReader.h"
 
 struct MpcOutput{

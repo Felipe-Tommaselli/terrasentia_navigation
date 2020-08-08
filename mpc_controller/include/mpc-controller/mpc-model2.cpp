@@ -268,8 +268,8 @@ double MPC::Solve(const Eigen::VectorXd& state, const Eigen::VectorXd& mpc_ptsx,
     options += "Sparse  true    reverse\n";
     options += "Numeric max_cpu_time " + to_string(_p.options_max_cpu_time_seconds) + "\n";
     //options += "Numeric max_cpu_time          0.5\n";
-    options += "Numeric tol                 0.01\n";
-    options += "Numeric acceptable_tol      0.05\n";
+    //options += "Numeric tol                 0.01\n";
+    //options += "Numeric acceptable_tol      0.05\n";
     /*
     options += "String warm_start_init_point       yes\n";
     options += "Numeric warm_start_bound_push       1e-9\n";

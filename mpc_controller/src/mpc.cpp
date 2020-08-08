@@ -1,27 +1,47 @@
+#include <ros/package.h>
+#include <string>
 #include <mpc/mpc.h>
 
-MpcDev::MpcDev(ros::NodeHandle* nh)
+using namespace std;
+
+MpcDev::MpcDev(ros::NodeHandle* n)
 {
-    _nh = nh;
-    std::string wp_topic_name, output_topic_name, pred_vals_topic_name, mpc_config_path, twist_topic_name;
-    _nh->param<std::string>("wp_topic_name", wp_topic_name, "wp_topic");
-    _nh->param<std::string>("output_topic_name", output_topic_name, "mpc_output");
-    _nh->param<std::string>("pred_vals_topic_name", pred_vals_topic_name, "mpc_pred_vals");
-    _nh->param<std::string>("mpc_config_path", mpc_config_path, "mpc.config");
-    _nh->param<std::string>("twist_topic_name", twist_topic_name, "cmd_vel");
-    std::string odom_topic_name;
-    _nh->param<std::string>("odom_topic_name", odom_topic_name, "odom");
-	_sub_odom = _nh->subscribe(odom_topic_name, 1, &MpcDev::odomCallback, this, ros::TransportHints().tcpNoDelay(true));
-    _sub_wp = _nh->subscribe(wp_topic_name, 1, &MpcDev::wpCb, this, ros::TransportHints().tcpNoDelay(true));
-    _pub_output = _nh->advertise<std_msgs::Float32MultiArray>( output_topic_name, 1 );
-    _pub_pred_vals = _nh->advertise<geometry_msgs::PoseArray>( pred_vals_topic_name, 1 );
-    _pub_pts_car = _nh->advertise<geometry_msgs::PoseArray>( "/pts_car", 1 );
-    _pub_mpc_pts = _nh->advertise<geometry_msgs::PoseArray>( "/mpc_pts", 1 );
-    this->pub_twist = _nh->advertise<geometry_msgs::Twist>( twist_topic_name, 1 );
-    ROS_INFO_STREAM("wp_topic_name " << wp_topic_name << " output_topic_name " << output_topic_name << " twist_topic_name " << twist_topic_name);
-    _run_mpc = new RunMpcController(mpc_config_path);
+    _n = n;
+
+    ros::NodeHandle param_n("~");
+    string wp_topic_name, output_topic_name, pred_vals_topic_name, mpc_config_path, twist_topic_name;
+    string odom_topic_name;
+    param_n.param<std::string>("wp_topic_name", wp_topic_name, "wp_topic");
+    param_n.param<std::string>("output_topic_name", output_topic_name, "mpc_output");
+    param_n.param<std::string>("pred_vals_topic_name", pred_vals_topic_name, "mpc_pred_vals");
+    param_n.param<std::string>("mpc_config_path", mpc_config_path, "mpc.config");
+    param_n.param<std::string>("twist_topic_name", twist_topic_name, "cmd_vel");
+    param_n.param<std::string>("odom_topic_name", odom_topic_name, "odom");
+
+    // Subscribers:
+	_sub_odom =         _n->subscribe(odom_topic_name, 1, &MpcDev::odomCallback, this, ros::TransportHints().tcpNoDelay(true));
+    _sub_wp =           _n->subscribe(wp_topic_name, 1, &MpcDev::wpCb, this, ros::TransportHints().tcpNoDelay(true));
+    // Publishers:
+    _pub_output =       _n->advertise<std_msgs::Float32MultiArray>( output_topic_name, 1 );
+    _pub_pred_vals =    _n->advertise<geometry_msgs::PoseArray>( pred_vals_topic_name, 1 );
+    _pub_pts_car =      _n->advertise<geometry_msgs::PoseArray>( "/pts_car", 1 );
+    _pub_mpc_pts =      _n->advertise<nav_msgs::Path>( "/mpc_pts", 1 );
+    _pub_twist =        _n->advertise<geometry_msgs::TwistStamped>( twist_topic_name, 1 );
+
+    ROS_INFO_STREAM("\nwp_topic_name:\t\t" << wp_topic_name <<
+                    "\noutput_topic_name:\t" << output_topic_name <<
+                    "\ntwist_topic_name:\t" << twist_topic_name);
+
+    //string coinfig_path = ros::package::getPath("mpc_controller") + "/" + mpc_config_path;
+    string coinfig_path = "/home/companion/catkin_ws/src/terrasentia_navigation/mpc_controller/" + mpc_config_path;
+
+    ROS_INFO_STREAM("mpc_controller pkg path: " << coinfig_path);
+
+    // Create MPC controller object
+    _run_mpc = new RunMpcController(coinfig_path);
+
     _last_ts = ros::Time::now().toSec();
-    this->b_running = false;
+    _b_running = false;
 }
 
 geometry_msgs::Quaternion getQuaternionForPoints(int i, double x0, double x1, double y0, double y1)
@@ -97,7 +117,7 @@ void MpcDev::run()
 {
     if(_wps_x.size() > 0)
     {     
-        this->b_running = true;   
+        _b_running = true;   
         MpcInput in;
         MpcOutput mpc_output;
         in.wp_x = _wps_x;
@@ -105,6 +125,7 @@ void MpcDev::run()
         double cur_ts = ros::Time::now().toSec();
         in.dt = cur_ts - _last_ts;
         _last_ts = cur_ts;
+        ros::Time init_time = _odom.header.stamp;
         in.x = _odom.pose.pose.position.x;
         in.y = _odom.pose.pose.position.y;
         in.theta = _yaw;
@@ -116,22 +137,23 @@ void MpcDev::run()
         mpc_output = _run_mpc->mpcController(in);
 
         this->debugPubs(mpc_output);
-        geometry_msgs::Twist twist;
-        twist.linear.x = 0.5;
-        twist.angular.z = mpc_output.wz;
-        this->pub_twist.publish(twist);
+        geometry_msgs::TwistStamped mpc_cmd;
+        mpc_cmd.header.stamp = init_time;
+        mpc_cmd.twist.linear.x = 0.6;
+        mpc_cmd.twist.angular.z = mpc_output.wz;
+        _pub_twist.publish(mpc_cmd);
     }
 
 }
 
-void MpcDev::wpCb (const geometry_msgs::PoseArray::ConstPtr& msg)
+void MpcDev::wpCb(const nav_msgs::Path::ConstPtr& msg)
 {
     _wps_x.clear();
     _wps_y.clear();
     ROS_INFO_STREAM("mpc_dev wpCb received size " << msg->poses.size());
     for(int i = 0; i < msg->poses.size(); i++)
     {
-        _wps_x.push_back(msg->poses[i].position.x);
-        _wps_y.push_back(msg->poses[i].position.y);
+        _wps_x.push_back(msg->poses[i].pose.position.x);
+        _wps_y.push_back(msg->poses[i].pose.position.y);
     }
 }
