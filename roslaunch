@@ -1,0 +1,7 @@
+#!/bin/bash
+source ~/catkin_ws/devel/setup.bash
+source /etc/ros/env.sh
+export ROS_HOME=$(echo ~companion)/.ros
+roslaunch mpc_controller run_navigation.launch &
+PID=$!
+wait "$PID"

@@ -11,12 +11,14 @@ MpcDev::MpcDev(ros::NodeHandle* n)
     ros::NodeHandle param_n("~");
     string wp_topic_name, output_topic_name, pred_vals_topic_name, mpc_config_path, twist_topic_name;
     string odom_topic_name;
+    string log_topic;
     param_n.param<std::string>("wp_topic_name", wp_topic_name, "wp_topic");
     param_n.param<std::string>("output_topic_name", output_topic_name, "mpc_output");
     param_n.param<std::string>("pred_vals_topic_name", pred_vals_topic_name, "mpc_pred_vals");
     param_n.param<std::string>("mpc_config_path", mpc_config_path, "mpc.config");
     param_n.param<std::string>("twist_topic_name", twist_topic_name, "cmd_vel");
     param_n.param<std::string>("odom_topic_name", odom_topic_name, "odom");
+    param_n.param<std::string>("log_topic", log_topic, "log");
 
     // Subscribers:
 	_sub_odom =         _n->subscribe(odom_topic_name, 1, &MpcDev::odomCallback, this, ros::TransportHints().tcpNoDelay(true));
@@ -27,18 +29,19 @@ MpcDev::MpcDev(ros::NodeHandle* n)
     _pub_pts_car =      _n->advertise<geometry_msgs::PoseArray>( "/pts_car", 1 );
     _pub_mpc_pts =      _n->advertise<nav_msgs::Path>( "/mpc_pts", 1 );
     _pub_twist =        _n->advertise<geometry_msgs::TwistStamped>( twist_topic_name, 1 );
+    _pub_log =          _n->advertise<std_msgs::String>(log_topic, 1);
 
     ROS_INFO_STREAM("\nwp_topic_name:\t\t" << wp_topic_name <<
                     "\noutput_topic_name:\t" << output_topic_name <<
                     "\ntwist_topic_name:\t" << twist_topic_name);
 
     //string coinfig_path = ros::package::getPath("mpc_controller") + "/" + mpc_config_path;
-    string coinfig_path = "/home/companion/catkin_ws/src/terrasentia_navigation/mpc_controller/" + mpc_config_path;
+    string config_path = "/home/companion/catkin_ws/src/terrasentia_navigation/mpc_controller/" + mpc_config_path;
 
     ROS_INFO_STREAM("mpc_controller pkg path: " << coinfig_path);
 
     // Create MPC controller object
-    _run_mpc = new RunMpcController(coinfig_path);
+    _run_mpc = new RunMpcController(config_path);
 
     _last_ts = ros::Time::now().toSec();
     _b_running = false;
@@ -98,6 +101,40 @@ void MpcDev::debugPubs(MpcOutput mpc_output)
     f32ma.data.push_back(mpc_output.vx);
     f32ma.data.push_back(mpc_output.wz);
     _pub_output.publish(f32ma);
+
+    /*
+     * Create MPC log data
+     */
+    /*
+	std::stringstream ss;
+	ss << mpc_input.speed << "," <<
+		  mpc_input.theta << "," <<
+		  mpc_output.wz << "," <<
+		  mpc_output.heading_diff << "," <<
+		  mpc_output.cte << "," <<
+		  mpc_output.solver_time << "," <<
+		  0.0;
+
+	for (int i=0; i < mpc_params.timestep_N-1; i++)
+	{
+		if(i < mpc_output.x_pred_vals.size())
+			ss << "," << mpc_output.x_pred_vals[i] << "," << mpc_output.y_pred_vals[i];
+		else
+			ss << ", , ";
+	}
+
+	for (int i=0; i < mpc_params.timestep_N-1; i++)
+	{
+		if(i < mpc_output.kappa_pred_vals.size())
+			ss << "," << mpc_output.kappa_pred_vals[i];
+		else
+			ss << ", "; 
+	}
+
+    std_msgs::String log_msg;
+    log_msg.data = ss.str();
+    _pub_log.publish(log_msg);
+    */
 }
 
 void MpcDev::odomCallback(const nav_msgs::Odometry::ConstPtr& msg)
@@ -115,6 +152,8 @@ void MpcDev::odomCallback(const nav_msgs::Odometry::ConstPtr& msg)
 
 void MpcDev::run()
 {
+    ros::Time init_time = _odom.header.stamp;
+    
     if(_wps_x.empty())
     {
         geometry_msgs::TwistStamped mpc_cmd;
@@ -133,7 +172,6 @@ void MpcDev::run()
         double cur_ts = ros::Time::now().toSec();
         in.dt = cur_ts - _last_ts;
         _last_ts = cur_ts;
-        ros::Time init_time = _odom.header.stamp;
         in.x = _odom.pose.pose.position.x;
         in.y = _odom.pose.pose.position.y;
         in.theta = _yaw;

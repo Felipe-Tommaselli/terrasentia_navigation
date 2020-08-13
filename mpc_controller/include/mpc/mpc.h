@@ -35,7 +35,8 @@ class MpcDev
         ros::Publisher      _pub_pred_vals;
         ros::Publisher      _pub_pts_car;
         ros::Publisher      _pub_mpc_pts;
-        ros::Publisher      _pub_twist;  
+        ros::Publisher      _pub_twist;
+        ros::Publisher      _pub_log;
         ros::Subscriber     _sub_odom;
         ros::Subscriber     _sub_wp;
         RunMpcController*   _run_mpc;
