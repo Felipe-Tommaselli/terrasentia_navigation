@@ -1,3 +1,0 @@
-metis_dummy.lo: metis_dummy.c /usr/include/stdc-predef.h
-
-/usr/include/stdc-predef.h:
