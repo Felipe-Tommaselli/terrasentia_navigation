@@ -12,12 +12,12 @@ Our TerraSentia mod, referred as TerraSentia*, contains a Velodyne Puck VLP-16 L
 
 ### Time synchronization in multiple devices
 To ensure the IMU messages are synchronized with the other messages, install chrony in the Raspberry Pi device (192.168.1.135):
-```
+```shell
 sudo apt-get install chrony
 ```
 Choose one machine as time server (usually the Jetson 192.168.1.99).
 On this machine, do:
-```
+```shell
 sudo vim /etc/chrony/chrony.conf
 ```
 Add these lines:
@@ -28,13 +28,13 @@ local stratum 8
 allow 192.168.1.135
 ```
 Then, on the client (`192.168.1.133`):
-```
+```shell
 sudo vim /etc/chrony/chrony.conf
 ```
 Add this lines:
 ```
 server 192.168.1.99 minpoll 0 maxpoll 5 maxdelay .05
-
+```
 ## To use DLIO as the state estimator
 
 Clone the DLIO package (our fork):
