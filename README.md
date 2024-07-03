@@ -3,9 +3,9 @@ A package with everything you need to run traversability algorithms on TerraSent
 
 ## Setup
 
-This repository is created to run on a custom modification of the TerraSentia robot.
+This repository was created to run on a custom modification of the TerraSentia robot.
 <p align="center">
-    <img src="images/terrasentia_new.png" width="400"/>
+    <img src="images/terrasentia_new.png" width="300"/>
 </p>
 
 Our TerraSentia mod, referred as TerraSentia*, contains a Velodyne Puck VLP-16 LiDAR and three fixed RGB cameras.

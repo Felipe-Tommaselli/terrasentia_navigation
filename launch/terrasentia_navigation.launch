@@ -8,7 +8,7 @@
         <node pkg="terrasentia_navigation" type="imu_conversion.py" name="imu_conversion" output="screen" required="true"/>
 
         <!-- Launch multi camera transformations -->
-        <!-- <include file="$(find unitree_navigation)/launch/unitree_go1_tfs.launch" /> -->
+        <include file="$(find terrasentia_navigation)/launch/terrasentia_tfs.launch" />
 
 		<!-- Set robot cameras from the other Jetson devices -->
 		<!-- <node pkg="unitree_navigation" type="run_robot_cams.sh" name="run_robot_cams" output="screen"/> -->

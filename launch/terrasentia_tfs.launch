@@ -1,0 +1,10 @@
+<launch>
+    <!-- Broadcast head camera tf -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="camera_front_broadcaster" args="0.2785 0 0.0167 -0.05236 0 0 base_link front_camera" />
+
+    <!-- Broadcast left camera tf -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="camera_left_broadcaster" args="-0.054 0.082 -0.0176 1.5707963267948966 0.2618 0 base_link left_camera" />
+
+    <!-- Broadcast right camera tf -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="camera_right_broadcaster" args="-0.054 -0.082 -0.0176 -1.5707963267948966 0.2618 0 base_link right_camera" />
+</launch>

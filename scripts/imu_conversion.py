@@ -25,6 +25,8 @@ class IMUConversion(object):
         self.rot_z = deque(maxlen=window_size)
         self.rot_w = deque(maxlen=window_size)
 
+        self.max_gyro = 5.0
+
     def receiveIMU(self, msg):
         imu_msg = Imu()
         imu_msg.header = msg.header
@@ -34,9 +36,12 @@ class IMUConversion(object):
         self.accel_x.append(msg.linear_acceleration.x)
         self.accel_y.append(msg.linear_acceleration.y)
         self.accel_z.append(msg.linear_acceleration.z)
-        self.gyro_x.append(msg.angular_velocity.x)
-        self.gyro_y.append(msg.angular_velocity.y)
-        self.gyro_z.append(msg.angular_velocity.z)
+        if np.absolute(msg.angular_velocity.x) <= self.max_gyro:
+            self.gyro_x.append(msg.angular_velocity.x)
+        if np.absolute(msg.angular_velocity.y) <= self.max_gyro:
+            self.gyro_y.append(msg.angular_velocity.y)
+        if np.absolute(msg.angular_velocity.z) <= self.max_gyro:
+            self.gyro_z.append(msg.angular_velocity.z)
         self.rot_x.append(msg.orientation.x)
         self.rot_y.append(msg.orientation.y)
         self.rot_z.append(msg.orientation.z)
