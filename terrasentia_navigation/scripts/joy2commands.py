@@ -1,7 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 from sensor_msgs.msg import Joy
+from std_srvs.srv import Trigger
 from geometry_msgs.msg import Twist
 
 class JoyToCmdVel:
@@ -18,6 +19,10 @@ class JoyToCmdVel:
         
         # Subscriber for joystick input
         self.joy_sub = rospy.Subscriber('/joy', Joy, self.joy_callback)
+
+        # Service client for toggling recording
+        rospy.wait_for_service('toggle_recording')
+        self.toggle_recording_service = rospy.ServiceProxy('toggle_recording', Trigger)
         
         rospy.loginfo("JoyToCmdVel node initialized")
 
@@ -26,6 +31,23 @@ class JoyToCmdVel:
         twist.linear.x = self.scale_linear * joy.axes[1]
         twist.angular.z = self.scale_angular * joy.axes[2]
         self.cmd_vel_pub.publish(twist)
+
+        # Check if the specified buttons are pressed
+        current_button_state = (joy.buttons[self.toggle_button1], joy.buttons[self.toggle_button2])
+        if all(current_button_state) and not all(self.previous_button_state):
+            # Both buttons pressed simultaneously, call the service
+            rospy.loginfo("Toggling recording via service call")
+            try:
+                response = self.toggle_recording_service()
+                if response.success:
+                    rospy.loginfo("Successfully toggled recording")
+                else:
+                    rospy.logwarn("Failed to toggle recording")
+            except rospy.ServiceException as e:
+                rospy.logerr("Service call failed: %s", e)
+
+        # Update the previous button state
+        self.previous_button_state = current_button_state
 
 if __name__ == '__main__':
     try:
