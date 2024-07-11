@@ -4,11 +4,22 @@
     <arg name="imu_topic"        value="/terrasentia/imu" />
 
 	<group ns="terrasentia">
+        <!-- terra_controller communication -->
+        <node pkg="ts_websockets" type="node.py" name="ts_ws" respawn="true" output="screen"/>
+        
         <!-- Republish imu messages -->
         <node pkg="terrasentia_navigation" type="imu_conversion.py" name="imu_conversion" output="screen" required="true"/>
 
         <!-- Launch multi camera transformations -->
         <include file="$(find terrasentia_navigation)/launch/terrasentia_tfs.launch" />
+
+        <!-- Launch multi camera images -->
+        <include file="$(find cam_publisher)/launch/run_cameras.launch" />
+
+        <!-- Connect to joystick -->
+        <node name="joy_node" pkg="joy" type="joy_node" output="log" required="true">
+            <param name="dev" type="string" value="/dev/input/js0"/>
+        </node>
 
 		<!-- Set robot cameras from the other Jetson devices -->
 		<!-- <node pkg="unitree_navigation" type="run_robot_cams.sh" name="run_robot_cams" output="screen"/> -->
@@ -23,7 +34,7 @@
         <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
 
         <!-- Launch DLIO Odometry Node -->
-        <node name="dlio_odom" pkg="direct_lidar_inertial_odometry" type="dlio_odom_node" output="screen" clear_params="true">
+        <node name="dlio_odom" pkg="direct_lidar_inertial_odometry" type="dlio_odom_node" output="log" clear_params="true">
 
             <!-- Load parameters -->
             <rosparam file="$(find terrasentia_navigation)/configs/dlio.yaml" command="load"/>
@@ -41,6 +52,12 @@
             <remap from="~kf_cloud" to="dlio/odom_node/pointcloud/keyframe"/>
             <remap from="~deskewed" to="dlio/odom_node/pointcloud/deskewed"/>
         </node>
+
+        <include file="$(find zed_wrapper)/launch/zed2.launch">
+            <arg name="cam_pos_x"	value="0.17" /> 
+            <arg name="cam_pos_y"	value="0.0" />
+            <arg name="cam_pos_z"	value="0.27" />
+        </include>
 
 		<!-- Launch MHE state estimation -->
         <!-- <node pkg="unitree_navigation" type="mhe_vio_node.py" name="mhe_node" required="true" output="screen"/> -->

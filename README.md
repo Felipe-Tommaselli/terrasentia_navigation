@@ -41,11 +41,12 @@ Clone the DLIO package (our fork):
 ```shell
 git clone git@github.com:matval/direct_lidar_inertial_odometry.git
 ```
-### Run the navigation package
-- Make sure the package is compiled. In your ROS workspace, run:
+## Run the navigation package
+Make sure the package is compiled. In your ROS workspace, run:
 ```shell
-catkin make
+catkin_make -DCMAKE_BUILD_TYPE=Release
 ```
+**Note:** you might need to run this command twice due to how DLIO is built
 Then, run the navigation launch
 ```shell
 roslaunch terrasentia_navigation terrasentia_navigation.launch

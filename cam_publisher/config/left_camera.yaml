@@ -1,0 +1,39 @@
+# image_width: 1920
+# image_height: 1080
+# camera_matrix:
+#   rows: 3
+#   cols: 3
+#   data: [1341.945890636853, 0.0, 978.2675251760488, 0.0, 1320.861888983156, 663.8324503874786, 0.0, 0.0, 1.0]
+# distortion_model: plumb_bob
+# distortion_coefficients:
+#   rows: 1
+#   cols: 5
+#   data: [-0.511013426637944, 0.1886604321811288, -0.03607531150594981, -0.001672974465054291, 0.0]
+# rectification_matrix:
+#   rows: 3
+#   cols: 3
+#   data: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+# projection_matrix:
+#   rows: 3
+#   cols: 4
+#   data: [942.6610946142795, 0.0, 969.7715260543167, 0.0, 0.0, 1209.9072524545616, 657.9276289374714, 0.0, 0.0, 0.0, 1.0, 0.0]
+
+image_width: 640
+image_height: 480
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [471.244317, 0.0, 317.845118, 0.0, 470.100681, 248.931772, 0.0, 0.0, 1.0]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [-0.385036, 0.125690, 0.000654, -0.000339, 0.0]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [367.740753, 0.0, 315.506128, 0.0, 0.0, 415.237885, 251.400099, 0.0, 0.0, 0.0, 1.0, 0.0]

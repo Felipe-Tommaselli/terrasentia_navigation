@@ -1,0 +1,4 @@
+[submodule "vision_opencv"]
+	path = vision_opencv
+	url = git@github.com:ros-perception/vision_opencv.git
+	branch = noetic
