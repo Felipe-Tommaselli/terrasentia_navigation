@@ -21,6 +21,9 @@
             <param name="dev" type="string" value="/dev/input/js0"/>
         </node>
 
+        <!-- Republish joystick to commands -->
+        <node pkg="terrasentia_navigation" type="joy2commands.py" name="joy2cmd" output="screen" required="true"/>
+
 		<!-- Set robot cameras from the other Jetson devices -->
 		<!-- <node pkg="unitree_navigation" type="run_robot_cams.sh" name="run_robot_cams" output="screen"/> -->
 

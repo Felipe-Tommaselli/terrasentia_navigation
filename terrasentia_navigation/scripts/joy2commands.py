@@ -1,8 +1,7 @@
-#!/usr/bin/env python
-
+#!/usr/bin/env python3
 import rospy
 from sensor_msgs.msg import Joy
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import TwistStamped
 
 class JoyToCmdVel:
     def __init__(self):
@@ -14,17 +13,17 @@ class JoyToCmdVel:
         self.scale_angular = rospy.get_param("~scale_angular", 1.0)
         
         # Publisher for cmd_vel
-        self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+        self.cmd_vel_pub = rospy.Publisher('cmd_vel', TwistStamped, queue_size=10)
         
         # Subscriber for joystick input
-        self.joy_sub = rospy.Subscriber('/joy', Joy, self.joy_callback)
+        self.joy_sub = rospy.Subscriber('joy', Joy, self.joy_callback)
         
         rospy.loginfo("JoyToCmdVel node initialized")
 
     def joy_callback(self, joy):
-        twist = Twist()
-        twist.linear.x = self.scale_linear * joy.axes[1]
-        twist.angular.z = self.scale_angular * joy.axes[2]
+        twist = TwistStamped()
+        twist.twist.linear.x = self.scale_linear * joy.axes[1]
+        twist.twist.angular.z = self.scale_angular * joy.axes[2]
         self.cmd_vel_pub.publish(twist)
 
 if __name__ == '__main__':

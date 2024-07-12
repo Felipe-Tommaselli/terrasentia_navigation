@@ -10,9 +10,28 @@
 
 // ROS stuff
 #include <ros/ros.h>
-#include "cv_bridge/cv_bridge.h"
+#include <sensor_msgs/Image.h>
 #include "image_transport/image_transport.h"
 #include "std_msgs/Header.h"
+
+sensor_msgs::ImagePtr convertCvMatToRosImage(const cv::Mat& image, const std_msgs::Header& header) {
+    /*
+    @brief: Convert OpenCV image to ROS Image message
+    @param: OpenCV image, ROS header
+    @return: ROS Image message
+    */
+    sensor_msgs::ImagePtr ros_image(new sensor_msgs::Image);
+    ros_image->header = header;
+    ros_image->height = image.rows;
+    ros_image->width = image.cols;
+    ros_image->encoding = "bgr8";
+    ros_image->is_bigendian = false;
+    ros_image->step = image.step;
+    size_t size = image.step * image.rows;
+    ros_image->data.resize(size);
+    memcpy(&ros_image->data[0], image.data, size);
+    return ros_image;
+}
 
 cv::Size get_calib_params(const std::string& yaml_file, sensor_msgs::CameraInfoPtr cam_info) {
     /*
@@ -98,7 +117,7 @@ cv::Size get_calib_params(const std::string& yaml_file, sensor_msgs::CameraInfoP
     return resolution;
 }
 
-void image_publisher(cv::Mat cam_image, image_transport::CameraPublisher cam_pub, std::string topic_name, std_msgs::Header image_header, sensor_msgs::ImagePtr cam_msg, sensor_msgs::CameraInfoPtr cam_info) {
+void image_publisher(cv::Mat& cam_image, image_transport::CameraPublisher& cam_pub, const std::string& topic_name, std_msgs::Header& image_header, sensor_msgs::CameraInfoPtr& cam_info) {
     /*
     @brief: Publish image to ROS topic
     @param: Camera image, Camera publisher, Topic name, Image header, Image message, CameraInfo message
@@ -111,9 +130,6 @@ void image_publisher(cv::Mat cam_image, image_transport::CameraPublisher cam_pub
         cv::Mat undistorted_image;
         cv::Mat K = cv::Mat(3, 3, CV_64F, cam_info->K.data());
         cv::Mat D = cv::Mat(cam_info->D.size(), 1, CV_64F, cam_info->D.data());
-        cv::undistort(cam_image, undistorted_image, K, D);
-        
-        cam_msg = cv_bridge::CvImage(image_header, "bgr8", undistorted_image).toImageMsg();
 
         cam_info->height = cam_image.rows;
         cam_info->width = cam_image.cols;
@@ -138,6 +154,9 @@ void image_publisher(cv::Mat cam_image, image_transport::CameraPublisher cam_pub
         new_cam_info->P[7] = 0.0;
         new_cam_info->P[11] = 1.0;
         new_cam_info->D.resize(5, 0.0);
+
+        cv::undistort(cam_image, undistorted_image, K, D, new_K);
+        sensor_msgs::ImagePtr cam_msg = convertCvMatToRosImage(undistorted_image, image_header);
 
         // Publish via image_transport
         cam_pub.publish(cam_msg, new_cam_info);
@@ -193,7 +212,7 @@ int main(int argc, char **argv) {
     usleep(500000);
 
     image_transport::ImageTransport it(nh);
-    image_transport::CameraPublisher cam_pub = it.advertiseCamera(topic_name + "/image_raw/image_rect_color", 1);
+    image_transport::CameraPublisher cam_pub = it.advertiseCamera(topic_name + "/image_rect_color", 1);
 
     std_msgs::Header image_header;
     sensor_msgs::ImagePtr cam_msg;
@@ -205,8 +224,6 @@ int main(int argc, char **argv) {
 
         if (cam_image.empty()) {
             ROS_WARN("Captured empty frame");
-            cam.startCapture();
-            usleep(500000);
             continue;
         }
 
@@ -215,7 +232,7 @@ int main(int argc, char **argv) {
         }
 
         image_header.stamp = ros::Time::now();
-        image_publisher(cam_image, cam_pub, topic_name, image_header, cam_msg, cam_info);
+        image_publisher(cam_image, cam_pub, topic_name, image_header, cam_info);
 
         ros::spinOnce();
         loop_rate.sleep();

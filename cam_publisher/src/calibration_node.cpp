@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
         cv::Mat cam_image;
         cam >> cam_image;
 
-        cv::flip(cam_image, cam_image, -1);
+        // cv::flip(cam_image, cam_image, -1);
 
         image_header.stamp = ros::Time::now();
         image_publisher(cam_image, cam_pub, cam_info_pub, topic_name, image_header, cam_info);
