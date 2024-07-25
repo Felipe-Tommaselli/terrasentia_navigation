@@ -1,0 +1,11 @@
+[Unit]
+Description=Auto Reconnect Bluetooth Joystick
+After=bluetooth.target
+
+[Service]
+ExecStart=/usr/sbin/auto_reconnect_joystick.sh
+Restart=always
+User=companion
+
+[Install]
+WantedBy=multi-user.target

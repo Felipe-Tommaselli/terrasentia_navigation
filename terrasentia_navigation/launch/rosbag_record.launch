@@ -1,0 +1,28 @@
+<launch>
+    <arg name="bag_name" default="$(env HOME)/terrasentia"/>
+
+    <arg name="topics"
+        value="/tf
+               /tf_static
+               /terrasentia/cmd_vel
+               /terrasentia/motion_command
+               /terrasentia/zed2/zed_node/imu/data
+               /terrasentia/imu
+               /terrasentia/odom
+               /terrasentia/dlio/odom_node/odom
+               /terrasentia/full_gps
+               /terrasentia/battery_state
+               /terrasentia/front_mono/camera_info
+               /terrasentia/front_mono/image_rect_color/compressed
+               /terrasentia/left_mono/camera_info
+               /terrasentia/left_mono/image_rect_color/compressed
+               /terrasentia/right_mono/camera_info
+               /terrasentia/right_mono/image_rect_color/compressed
+               /terrasentia/velodyne_points
+               /terrasentia/zed2/zed_node/rgb/camera_info
+               /terrasentia/zed2/zed_node/rgb/image_rect_color/compressed
+               /terrasentia/zed2/zed_node/depth/camera_info
+               /terrasentia/zed2/zed_node/depth/depth_registered"/>
+    
+    <node name="rosbag_record" pkg="rosbag" type="record" args="--lz4 -o $(arg bag_name) $(arg topics)" output="log"/>
+</launch>

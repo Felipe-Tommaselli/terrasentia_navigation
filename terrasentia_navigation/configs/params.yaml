@@ -3,7 +3,7 @@ dlio:
     odom: odom
     baselink: base_link
     lidar: velodyne
-    imu: imu_link
+    imu: zed2_imu_link
 
   map:
     waitUntilMove: true
