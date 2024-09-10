@@ -34,12 +34,6 @@
         <!-- Launch Unitree Go1 rosbag record trigger node -->
         <node pkg="terrasentia_navigation" type="bag_recorder.py" name="bag_recorder" output="screen" required="true"/>
 
-		<!-- Set robot cameras from the other Jetson devices -->
-		<!-- <node pkg="unitree_navigation" type="run_robot_cams.sh" name="run_robot_cams" output="screen"/> -->
-
-		<!-- Launch Unitree Go1 state_control node -->
-        <!-- <node pkg="unitree_navigation" type="unitree_state_control" name="unitree_state_control" output="screen" required="true"/> -->
-
         <!-- Launch Velodyne VLP-16 point cloud -->
         <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch">
             <arg name="laserscan_ring" value="16" />
@@ -68,7 +62,7 @@
         <include file="$(find zed_wrapper)/launch/zed2.launch">
             <arg name="cam_pos_x"	value="0.17" /> 
             <arg name="cam_pos_y"	value="0.0" />
-            <arg name="cam_pos_z"	value="0.27" />
+            <arg name="cam_pos_z"	value="0.245" />
         </include>
 
 		<!-- Launch MHE state estimation -->
