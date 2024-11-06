@@ -1,4 +1,7 @@
 <launch>
+    <!-- Broadcast LiDAR tf -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="lidar_broadcaster" args="0.14 0 0.35 -0.0174533 0 0 base_link velodyne" />
+
     <!-- Broadcast head camera tf -->
     <node pkg="tf2_ros" type="static_transform_publisher" name="camera_front_broadcaster" args="0.23222 0 0.125 0 0 0 base_link front_camera" />
 

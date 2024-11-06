@@ -1,0 +1,10 @@
+<launch>
+	<group ns="terrasentia">
+        <node name="goal_publisher_node" pkg="goal_publisher" type="goal_publisher.py" output="screen">
+            <param name="odom_topic"        value="/terrasentia/dlio/odom_node/odom"/>
+            <param name="gps_topic"         value="/terrasentia/fix"/>
+            <param name="goal_topic"        value="/move_base_simple/goal"/>
+            <param name="goal_file"         value="$(find goal_publisher)/goals/goal.txt"/>
+        </node>
+	</group>
+</launch>

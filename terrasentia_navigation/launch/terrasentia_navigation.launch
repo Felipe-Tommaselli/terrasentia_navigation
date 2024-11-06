@@ -7,6 +7,9 @@
         <!-- terra_controller communication -->
         <!-- <node pkg="ts_websockets" type="node.py" name="ts_ws" respawn="true" output="screen"/> -->
         <node pkg="ts_websockets" type="pub_controller_topics_node.py" name="pub_controller_gps_node" respawn="true" output="screen"/>
+
+        <!-- Republish GPS messages -->
+        <node pkg="terrasentia_navigation" type="gps_conversion.py" name="gps_conversion" output="screen" required="true"/>
         
         <!-- Republish imu messages -->
         <node pkg="terrasentia_navigation" type="imu_conversion.py" name="imu_conversion" output="screen" required="true"/>
@@ -36,12 +39,11 @@
 
         <!-- Launch Velodyne VLP-16 point cloud -->
         <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch">
-            <arg name="laserscan_ring" value="16" />
+            <arg name="min_range" value="0.4" />
         </include>
 
         <!-- Launch DLIO Odometry Node --> 
         <node name="dlio_odom" pkg="direct_lidar_inertial_odometry" type="dlio_odom_node" output="log" clear_params="true">
-
             <!-- Load parameters -->
             <rosparam file="$(find terrasentia_navigation)/configs/dlio.yaml" command="load"/>
             <rosparam file="$(find terrasentia_navigation)/configs/params.yaml" command="load"/>
@@ -62,7 +64,7 @@
         <include file="$(find zed_wrapper)/launch/zed2.launch">
             <arg name="cam_pos_x"	value="0.17" /> 
             <arg name="cam_pos_y"	value="0.0" />
-            <arg name="cam_pos_z"	value="0.245" />
+            <arg name="cam_pos_z"	value="0.26" />
         </include>
 
 		<!-- Launch MHE state estimation -->
