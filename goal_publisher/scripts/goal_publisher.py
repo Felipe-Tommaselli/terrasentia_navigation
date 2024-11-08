@@ -19,8 +19,9 @@ class GPSOdomTransformNode:
         rospy.init_node('goal_publisher_node', anonymous=True)
 
         # Parameters
-        self.min_distance = rospy.get_param('~min_distance', 5.0)               # Minimum distance for new GPS node
-        self.min_num_nodes = rospy.get_param('~min_nodes', 3)                   # Number of nodes to collect before optimization
+        self.min_accuracy = rospy.get_param('~min_accuracy', 1.0)               # Minimum GPS accuracy
+        self.min_distance = rospy.get_param('~min_distance', 3.0)               # Minimum distance for new GPS node
+        self.min_num_nodes = rospy.get_param('~min_nodes', 5)                   # Number of nodes to collect before optimization
         self.max_num_nodes = rospy.get_param('~max_nodes', 100)                 # Maximum number of nodes to store
         self.goal_file = rospy.get_param('~goal_file', '/path/to/goal.txt')     # Path to goal file
         odom_topic = rospy.get_param('~odom_topic', '/terrasentia/odom')
@@ -31,7 +32,7 @@ class GPSOdomTransformNode:
         self.odom_gps_pairs = []
         self.tf_frame = 'odom'
         self.optimization_done = False
-        self.transformation = np.eye(4)
+        self.transformation = np.eye(3)
 
         # Load goal from file in lat/lon format
         self.goal_lat, self.goal_lon = self.load_goal(self.goal_file)
@@ -67,16 +68,20 @@ class GPSOdomTransformNode:
         """
         Callback function to handle synchronized odometry and GPS data.
         """
+        if np.sqrt(gps_data.position_covariance[0]) > self.min_accuracy:
+            rospy.logwarn("GPS accuracy below threshold. Skipping data point.")
+            return
+
         self.tf_frame = odom_data.header.frame_id
 
-        odom_point = [odom_data.pose.pose.position.x, odom_data.pose.pose.position.y, odom_data.pose.pose.position.z]
+        odom_point = [odom_data.pose.pose.position.x, odom_data.pose.pose.position.y]
         
         # Convert GPS data to UTM coordinates
         gps_utm = fromLatLong(gps_data.latitude, gps_data.longitude)
-        gps_point = [gps_utm.easting, gps_utm.northing, gps_data.altitude]
+        gps_point = [gps_utm.easting, gps_utm.northing]
 
         # Extract GPS accuracy from covariance matrix (assuming diagonal covariance)
-        gps_accuracy = np.sqrt(np.mean(np.diag(gps_data.position_covariance)))
+        gps_accuracy = np.sqrt(gps_data.position_covariance[0])
 
         new_data_point = odom_point + gps_point + [gps_accuracy]
         
@@ -85,8 +90,8 @@ class GPSOdomTransformNode:
                 self.odom_gps_pairs.append(new_data_point)
 
             else:
-                prev_odom_point = self.odom_gps_pairs[-1][:3]
-                prev_gps_point = self.odom_gps_pairs[-1][3:6]
+                prev_odom_point = self.odom_gps_pairs[-1][:2]
+                prev_gps_point = self.odom_gps_pairs[-1][2:4]
 
                 odom_dist = np.linalg.norm(np.array(odom_point) - np.array(prev_odom_point))
                 gps_dist = np.linalg.norm(np.array(gps_point) - np.array(prev_gps_point))
@@ -128,10 +133,6 @@ class GPSOdomTransformNode:
                 self.transformation = transformation
                 self.optimization_done = True
 
-            rospy.loginfo("Optimization complete with {} nodes".format(len(self.odom_gps_pairs)))
-            rospy.loginfo("Optimized transformation: \n%s", transformation)
-            rospy.loginfo("Optimization finished in %s seconds", (rospy.Time.now() - start_time).to_sec())
-
     def publish_goal(self, goal_lat, goal_lon):
         """
         Convert lat/lon goal into odometry frame using the optimized transformation and publish it.
@@ -139,9 +140,10 @@ class GPSOdomTransformNode:
         goal_utm = fromLatLong(goal_lat, goal_lon)
         goal_x, goal_y = goal_utm.easting, goal_utm.northing
 
-        # Apply transformation to goal coordinates
-        transformed_goal = self.transformation[:3,:3] @ np.array([goal_x, goal_y, 0])
-        transformed_goal = transformed_goal + self.transformation[:3,3]
+        with self.data_lock:
+            # Apply transformation to goal coordinates
+            transformed_goal = self.transformation[:2,:2] @ np.array([goal_x, goal_y])
+            transformed_goal = transformed_goal + self.transformation[:2,2]
 
         goal_msg = PoseStamped()
         goal_msg.header.frame_id = self.tf_frame
