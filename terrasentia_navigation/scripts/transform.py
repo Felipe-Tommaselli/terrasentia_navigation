@@ -8,8 +8,8 @@ class Transform:
         
     def get_transform(self):
         try:
-            self.tf.waitForTransform("/base_link", "/zed2_imu_link", rospy.Time(), rospy.Duration(4.0))
-            position, quaternion = self.tf.lookupTransform("/base_link", "/zed2_imu_link", rospy.Time(0))
+            self.tf.waitForTransform("/base_link", "/zed2i_imu_link", rospy.Time(), rospy.Duration(4.0))
+            position, quaternion = self.tf.lookupTransform("/base_link", "/zed2i_imu_link", rospy.Time(0))
             return position, quaternion
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as e:
             rospy.logerr("TF Exception: {}".format(e))

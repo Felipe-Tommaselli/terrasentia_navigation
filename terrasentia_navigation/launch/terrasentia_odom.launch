@@ -1,0 +1,28 @@
+<launch>
+    <!-- Params -->
+    <arg name="pointcloud_topic" value="/terrasentia/livox/lidar" />
+    <arg name="imu_topic"        value="/terrasentia/imu" />
+
+	<group ns="terrasentia">
+        <!-- Launch DLIO Odometry Node --> 
+        <node name="dlio_odom" pkg="direct_lidar_inertial_odometry" type="dlio_odom_node" output="screen" clear_params="true">
+            <!-- Load parameters -->
+            <rosparam file="$(find terrasentia_navigation)/configs/dlio.yaml" command="load"/>
+            <rosparam file="$(find terrasentia_navigation)/configs/params.yaml" command="load"/>
+
+            <param name="dlio/verbose" value="true"/>
+
+            <!-- Subscriptions -->
+            <remap from="~pointcloud" to="$(arg pointcloud_topic)"/>
+            <remap from="~imu" to="$(arg imu_topic)"/>
+
+            <!-- Publications -->
+            <remap from="~odom"     to="dlio/odom_node/odom"/>
+            <remap from="~pose"     to="dlio/odom_node/pose"/>
+            <remap from="~path"     to="dlio/odom_node/path"/>
+            <remap from="~kf_pose"  to="dlio/odom_node/keyframes"/>
+            <remap from="~kf_cloud" to="dlio/odom_node/pointcloud/keyframe"/>
+            <remap from="~deskewed" to="dlio/odom_node/pointcloud/deskewed"/>
+        </node>
+	</group>
+</launch>

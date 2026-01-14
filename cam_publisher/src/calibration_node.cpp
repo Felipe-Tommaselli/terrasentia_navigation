@@ -11,11 +11,11 @@
 #include "sensor_msgs/CameraInfo.h"
 #include "sensor_msgs/SetCameraInfo.h"
 
+/*
+@brief: Publish image and camera info to ROS topics
+@param: Camera image, Camera publisher, Camera info publisher, Topic name, Image header, CameraInfo message
+*/
 void image_publisher(cv::Mat cam_image, image_transport::Publisher cam_pub, ros::Publisher cam_info_pub, std::string topic_name, std_msgs::Header image_header, sensor_msgs::CameraInfoPtr cam_info) {
-    /*
-    @brief: Publish image and camera info to ROS topics
-    @param: Camera image, Camera publisher, Camera info publisher, Topic name, Image header, CameraInfo message
-    */
     if (!cam_image.empty()) {
         std::string frame_id = topic_name + "_frame";
         image_header.frame_id = frame_id;
@@ -31,7 +31,6 @@ sensor_msgs::CameraInfoPtr create_camera_info(const cv::Size& frameSize) {
     sensor_msgs::CameraInfoPtr cam_info(new sensor_msgs::CameraInfo());
     cam_info->width = frameSize.width;
     cam_info->height = frameSize.height;
-    // Preencher com informações básicas
     cam_info->K = {1.0, 0.0, frameSize.width / 2.0, 0.0, 1.0, frameSize.height / 2.0, 0.0, 0.0, 1.0};
     cam_info->P = {1.0, 0.0, frameSize.width / 2.0, 0.0, 0.0, 1.0, frameSize.height / 2.0, 0.0, 0.0, 0.0, 1.0, 0.0};
     return cam_info;
@@ -79,7 +78,6 @@ int main(int argc, char **argv) {
     std_msgs::Header image_header;
     sensor_msgs::CameraInfoPtr cam_info = create_camera_info(frameSize);
 
-    // Adicione o serviço
     ros::ServiceServer service = nh.advertiseService<sensor_msgs::SetCameraInfo::Request, sensor_msgs::SetCameraInfo::Response>(
         topic_name + "/set_camera_info",
         boost::bind(setCameraInfoCallback, _1, _2, cam_info)

@@ -1,12 +1,16 @@
 <launch>
     <!-- Params -->
-    <arg name="pointcloud_topic" value="/terrasentia/velodyne_points" />
-    <arg name="imu_topic"        value="/terrasentia/zed2/zed_node/imu/data" />
+    <arg name="pointcloud_topic" value="/terrasentia/livox/lidar" />
+    <arg name="imu_topic"        value="/terrasentia/imu" />
 
 	<group ns="terrasentia">
         <!-- terra_controller communication -->
-        <!-- <node pkg="ts_websockets" type="node.py" name="ts_ws" respawn="true" output="screen"/> -->
-        <node pkg="ts_websockets" type="pub_controller_topics_node.py" name="pub_controller_gps_node" respawn="true" output="screen"/>
+        <node pkg="ts_websockets" type="node.py" name="ts_ws" respawn="true" output="screen">
+            <!-- REMOVE IT LATER: ADDED TO PREVENT CMD_VEL FROM GETTING ACTIVATED -->
+            <remap from="cmd_vel" to="cmd_vel_internal"/>
+        </node>
+        <node pkg="rostopic" type="rostopic" name="enable_auto_mode_pub" args="pub /terrasentia/enable_auto_mode std_msgs/Int8 0 -r 5" output="screen"/>
+        <!-- <node pkg="ts_websockets" type="pub_controller_topics_node.py" name="pub_controller_gps_node" respawn="true" output="screen"/> -->
 
         <!-- Republish GPS messages -->
         <node pkg="terrasentia_navigation" type="gps_conversion.py" name="gps_conversion" output="screen" required="true"/>
@@ -21,51 +25,31 @@
         <include file="$(find terrasentia_navigation)/launch/terrasentia_tfs.launch" />
 
         <!-- Launch multi camera images -->
-        <include file="$(find cam_publisher)/launch/run_cameras.launch" />
+        <!-- <include file="$(find cam_publisher)/launch/run_cameras.launch" /> -->
 
         <!-- Connect to joystick -->
-        <node name="joy_node" pkg="joy" type="joy_node" output="log" required="true">
+        <!-- <node name="joy_node" pkg="joy" type="joy_node" output="log" required="true">
             <param name="dev" type="string" value="/dev/input/js0"/>
-        </node>
+        </node> -->
 
         <!-- Republish joystick to commands -->
-        <node pkg="terrasentia_navigation" type="joy2commands.py" name="joy2cmd" output="screen" required="true">
+        <!-- <node pkg="terrasentia_navigation" type="joy2commands.py" name="joy2cmd" output="screen" required="true">
             <param name="scale_linear" type="double" value="0.9" />
             <param name="scale_angular" type="double" value="3.0" />
-        </node>
+        </node> -->
 
         <!-- Launch Unitree Go1 rosbag record trigger node -->
-        <node pkg="terrasentia_navigation" type="bag_recorder.py" name="bag_recorder" output="screen" required="true"/>
+        <!-- <node pkg="terrasentia_navigation" type="bag_recorder.py" name="bag_recorder" output="screen" required="true"/> -->
 
-        <!-- Launch Velodyne VLP-16 point cloud -->
-        <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch">
-            <arg name="min_range" value="0.4" />
-        </include>
-
-        <!-- Launch DLIO Odometry Node --> 
-        <node name="dlio_odom" pkg="direct_lidar_inertial_odometry" type="dlio_odom_node" output="log" clear_params="true">
-            <!-- Load parameters -->
-            <rosparam file="$(find terrasentia_navigation)/configs/dlio.yaml" command="load"/>
-            <rosparam file="$(find terrasentia_navigation)/configs/params.yaml" command="load"/>
-
-            <!-- Subscriptions -->
-            <remap from="~pointcloud" to="$(arg pointcloud_topic)"/>
-            <remap from="~imu" to="$(arg imu_topic)"/>
-
-            <!-- Publications -->
-            <remap from="~odom"     to="dlio/odom_node/odom"/>
-            <remap from="~pose"     to="dlio/odom_node/pose"/>
-            <remap from="~path"     to="dlio/odom_node/path"/>
-            <remap from="~kf_pose"  to="dlio/odom_node/keyframes"/>
-            <remap from="~kf_cloud" to="dlio/odom_node/pointcloud/keyframe"/>
-            <remap from="~deskewed" to="dlio/odom_node/pointcloud/deskewed"/>
-        </node>
-
-        <include file="$(find zed_wrapper)/launch/zed2.launch">
+        <!-- <include file="$(find zed_wrapper)/launch/zed2i.launch">
             <arg name="cam_pos_x"	value="0.17" /> 
             <arg name="cam_pos_y"	value="0.0" />
             <arg name="cam_pos_z"	value="0.26" />
-        </include>
+        </include> -->
+
+        <include file="$(find livox_ros_driver2)/launch_ROS1/msg_MID360.launch">
+            <arg name="xfer_format" value="2" />
+        </include>	
 
 		<!-- Launch MHE state estimation -->
         <!-- <node pkg="unitree_navigation" type="mhe_vio_node.py" name="mhe_node" required="true" output="screen"/> -->

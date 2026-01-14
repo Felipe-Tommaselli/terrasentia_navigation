@@ -1,22 +1,22 @@
 <launch>
-    <node pkg="cam_publisher" type="camera_node" name="front_mono" output="screen">
-        <param name="device" value="6"/>
+    <node pkg="cam_publisher" type="camera_node" name="front_mono" output="log">
+        <param name="device" value="2"/>
         <param name="topic_name" value="front_mono"/>
         <param name="camera_info_yaml" value="$(find cam_publisher)/config/front_camera.yaml"/>
         <param name="invert_image" value="true"/>
     </node>
 
-    <node pkg="cam_publisher" type="camera_node" name="left_mono" output="screen">
-        <param name="device" value="2"/>
+    <!-- <node pkg="cam_publisher" type="camera_node" name="left_mono" output="screen">
+        <param name="device" value="0"/>
         <param name="topic_name" value="left_mono"/>
         <param name="camera_info_yaml" value="$(find cam_publisher)/config/left_camera.yaml"/>
         <param name="invert_image" value="true"/>
     </node> 
 
     <node pkg="cam_publisher" type="camera_node" name="right_mono" output="screen">
-        <param name="device" value="0"/>
+        <param name="device" value="2"/>
         <param name="topic_name" value="right_mono"/>
         <param name="camera_info_yaml" value="$(find cam_publisher)/config/right_camera.yaml"/>
         <param name="invert_image" value="false"/>
-    </node>
+    </node> -->
 </launch>

@@ -2,8 +2,8 @@ dlio:
   frames:
     odom: odom
     baselink: base_link
-    lidar: velodyne
-    imu: zed2_imu_link
+    lidar: livox_frame
+    imu: imu_link
 
   map:
     waitUntilMove: true
@@ -26,9 +26,9 @@ dlio:
 
     preprocessing:
       cropBoxFilter:
-        size: 1.0
+        size: 0.05
       voxelFilter:
-        res: 0.25
+        res: 0.05
 
     keyframe:
       threshD: 1.0
