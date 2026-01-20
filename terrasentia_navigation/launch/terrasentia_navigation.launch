@@ -9,7 +9,9 @@
             <!-- REMOVE IT LATER: ADDED TO PREVENT CMD_VEL FROM GETTING ACTIVATED -->
             <remap from="cmd_vel" to="cmd_vel_internal"/>
         </node>
-        <node pkg="rostopic" type="rostopic" name="enable_auto_mode_pub" args="pub /terrasentia/enable_auto_mode std_msgs/Int8 0 -r 5" output="screen"/>
+
+        <!-- Enable auto mode with 1 in the message -->
+        <node pkg="rostopic" type="rostopic" name="enable_auto_mode_pub" args="pub /terrasentia/enable_auto_mode std_msgs/Int8 1 -r 5" output="screen"/>
         <!-- <node pkg="ts_websockets" type="pub_controller_topics_node.py" name="pub_controller_gps_node" respawn="true" output="screen"/> -->
 
         <!-- Republish GPS messages -->
@@ -41,11 +43,11 @@
         <!-- Launch Unitree Go1 rosbag record trigger node -->
         <!-- <node pkg="terrasentia_navigation" type="bag_recorder.py" name="bag_recorder" output="screen" required="true"/> -->
 
-        <!-- <include file="$(find zed_wrapper)/launch/zed2i.launch">
+        <include file="$(find zed_wrapper)/launch/zed2i.launch">
             <arg name="cam_pos_x"	value="0.17" /> 
             <arg name="cam_pos_y"	value="0.0" />
             <arg name="cam_pos_z"	value="0.26" />
-        </include> -->
+        </include>
 
         <include file="$(find livox_ros_driver2)/launch_ROS1/msg_MID360.launch">
             <arg name="xfer_format" value="2" />
@@ -53,5 +55,11 @@
 
 		<!-- Launch MHE state estimation -->
         <!-- <node pkg="unitree_navigation" type="mhe_vio_node.py" name="mhe_node" required="true" output="screen"/> -->
+        <!-- Launch Livox to LaserScan converter -->
+        <node pkg="terrasentia_navigation" type="livox_to_scan.py" name="livox_to_scan" output="screen">
+            <param name="livox_topic" value="/terrasentia/livox/lidar"/>
+            <param name="scan_topic" value="/terrasentia/scan2"/>
+            <param name="points_per_scan" value="1081"/>
+        </node>
 	</group>
 </launch>
